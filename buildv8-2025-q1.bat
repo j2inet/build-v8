@@ -1,4 +1,4 @@
-@ECHO OFF
+ECHO OFF
 CLS
 SETLOCAL ENABLEEXTENSIONS
 setlocal EnableDelayedExpansion
@@ -7,12 +7,12 @@ ECHO Building V8
 IF ERRORLEVEL 1 ECHO Unable to enable extensions
 REM Make sure that Visual Studio (Community Edition) has the components that is needs.
 pushd "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
-REM vs_installer.exe install --productid Microsoft.VisualStudio.Product.Community --ChannelId VisualStudio.17.Release --add Microsoft.VisualStudio.Workload.NativeDesktop  --add Microsoft.VisualStudio.Component.VC.ATLMFC  --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.VC.MFC.ARM64 --add Microsoft.VisualStudio.Component.Windows10SDK.20348 --includeRecommended
+vs_installer.exe install --productid Microsoft.VisualStudio.Product.Community --ChannelId VisualStudio.17.Release --add Microsoft.VisualStudio.Workload.NativeDesktop  --add Microsoft.VisualStudio.Component.VC.ATLMFC  --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.VC.MFC.ARM64 --add Microsoft.VisualStudio.Component.Windows10SDK.20348  --add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang	 --includeRecommended
 popd
 
 
 ECHO Setting project path
-SET drive=j:
+SET drive=c:
 SET ProjectRoot=%drive%\shares\projects
 SET TempFolder=%ProjectRoot%\google\temp
 SET DepotFolder=%ProjectRoot%\google\depot_tools
@@ -53,10 +53,7 @@ mkdir %chromium_checkout_path%
 mkdir %v8_checkout_path%
 
 ECHO checking for build tools
-if not exist "%depot_tools_download_path%" (
-	ECHO Downloading build files
-	REM powershell Invoke-WebRequest -Uri %depot_tools_source% -OutFile %depot_tools_download_path%
-)
+
 ECHO "Checking for windows ddk"
 if not exist "%windows_ddk_path%" (
 	ECHO Downloading Windows Driver Development Kit
@@ -68,7 +65,15 @@ ECHO expanding build tools
 REM powershell Expand-Archive -LiteralPath %depot_tools_download_path% -DestinationPath %depot_tools_path% -Force
 
 cd %v8_checkout_path%
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ECHO ___________________________________________________
+ECHO %DepotFolder%
+if not exist "%DepotFolder%" (
+	ECHO Downloading build files
+	REM git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+	powershell Invoke-WebRequest -Uri %depot_tools_source% -OutFile %depot_tools_download_path%
+)
+ECHO ___________________________________________________
+
 
 call gclient.bat update
 call gclient.bat sync
@@ -77,7 +82,7 @@ cd %v8_checkout_path%
 call fetch --nohistory v8
 cd v8
 call git fetch --tags
-call git checkout 13.6.9
+call git checkout 11.9.99
 
 
 ECHO.>SuggestedBuildOptions.txt
@@ -117,3 +122,4 @@ ECHO more information on this script can be found on my blog at
 ECHO https://blog.j2i.net. This script was originally written in
 ECHO March 2025. With time, as V8 and the build process change, 
 ECHO these instructions may become less valid. 
+ [32mLater![0m 
